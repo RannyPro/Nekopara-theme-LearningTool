@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nekopara Learning Academy</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+        }
+        .header {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            padding: 30px;
+            text-align: center;
+            color: white;
+        }
+        .header h1 { font-size: 2.5em; text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3); }
+        .tabs {
+            display: flex;
+            background: #f8f9fa;
+            border-bottom: 3px solid #f093fb;
+            overflow-x: auto;
+        }
+        .tab {
+            padding: 15px 25px;
+            cursor: pointer;
+            border: none;
+            background: transparent;
+            font-size: 1em;
+            font-weight: bold;
+            color: #666;
+            transition: all 0.3s;
+            border-bottom: 3px solid transparent;
+            white-space: nowrap;
+        }
+        .tab:hover { background: rgba(240, 147, 251, 0.1); }
+        .tab.active {
+            color: #f5576c;
+            border-bottom-color: #f5576c;
+            background: white;
+        }
+        .content { padding: 30px; }
+        .section { display: none; }
+        .section.active { display: block; }
+        .input-group { margin-bottom: 20px; }
+        .input-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #555;
+        }
+        textarea, input, select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            font-size: 1em;
+        }
+        textarea { min-height: 150px; resize: vertical; }
+        .btn {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 25px;
+            font-size: 1em;
+            font-weight: bold;
+            cursor: pointer;
+            margin: 5px;
+        }
+        .btn:hover { transform: translateY(-2px); }
+        .btn-secondary {
+            background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+            color: #333;
+        }
+        .flash-display {
+            background: white;
+            border: 3px solid #f093fb;
+            border-radius: 15px;
+            padding: 60px;
+            text-align: center;
+            min-height: 300px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 20px 0;
+        }
+        .flash-word {
+            font-size: 3em;
+            font-weight: bold;
+            color: #f5576c;
+        }
+        .controls {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            align-items: center;
+            margin: 20px 0;
+        }
+        .stats {
+            background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+            padding: 20px;
+            border-radius: 15px;
+            margin: 20px 0;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+        .stat-item {
+            text-align: center;
+            background: white;
+            padding: 15px;
+            border-radius: 10px;
+        }
+        .stat-value {
+            font-size: 1.8em;
+            font-weight: bold;
+            color: #f5576c;
+        }
+        .flashcard {
+            background: white;
+            border: 3px solid #f093fb;
+            border-radius: 15px;
+            padding: 40px;
+            min-height: 250px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            margin: 20px 0;
+        }
+        .flashcard.flipped {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+        }
+        .flashcard-text { font-size: 1.8em; text-align: center; }
+        .game-board {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+            margin: 20px 0;
+        }
+        .memory-card {
+            aspect-ratio: 1;
+            background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2em;
+            cursor: pointer;
+            border: 3px solid transparent;
+        }
+        .memory-card.flipped {
+            background: white;
+            border-color: #f093fb;
+        }
+        .memory-card.matched {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+        }
+        .quiz-option {
+            background: white;
+            border: 2px solid #ddd;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 10px 0;
+            cursor: pointer;
+        }
+        .quiz-option:hover {
+            border-color: #f093fb;
+            background: rgba(240, 147, 251, 0.1);
+        }
+        .quiz-option.correct { background: #d4edda; border-color: #28a745; }
+        .quiz-option.incorrect { background: #f8d7da; border-color: #dc3545; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>✨ Nekopara Learning Academy ✨</h1>
+            <p>Master knowledge at lightning speed! Nya~</p>
+        </div>
+
+        <div class="tabs">
+            <button class="tab active" onclick="switchTab(event, 'speed-reader')">⚡ Speed Reader</button>
+            <button class="tab" onclick="switchTab(event, 'flashcards')">📇 Flashcards</button>
+            <button class="tab" onclick="switchTab(event, 'memory-game')">🎮 Memory</button>
+            <button class="tab" onclick="switchTab(event, 'quiz')">❓ Quiz</button>
+        </div>
+
+        <div class="content">
+            <div id="speed-reader" class="section active">
+                <h2 style="text-align: center; color: #f5576c; margin-bottom: 20px;">⚡ Speed Reader</h2>
+                <div class="input-group">
+                    <label>Paste Your Text:</label>
+                    <textarea id="readerText" placeholder="Paste text here..."></textarea>
+                </div>
+                <div class="controls">
+                    <label>Speed (WPM): <input type="number" id="wpm" value="300" min="50" max="1000" style="width: 100px;"></label>
+                    <button class="btn" onclick="startSpeedReader()">▶️ Start</button>
+                    <button class="btn btn-secondary" onclick="pauseSpeedReader()">⏸️ Pause</button>
+                    <button class="btn btn-secondary" onclick="resetSpeedReader()">🔄 Reset</button>
+                </div>
+                <div class="flash-display">
+                    <div class="flash-word" id="flashWord">Ready!</div>
+                </div>
+                <div class="stats">
+                    <div class="stat-item">
+                        <div>Words Read</div>
+                        <div class="stat-value" id="wordsRead">0</div>
+                    </div>
+                    <div class="stat-item">
+                        <div>Progress</div>
+                        <div class="stat-value" id="progress">0%</div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="flashcards" class="section">
+                <h2 style="text-align: center; color: #f5576c; margin-bottom: 20px;">📇 Flashcards</h2>
+                <div class="input-group">
+                    <label>📝 Paste Any Text (we'll auto-create flashcards!):</label>
+                    <textarea id="autoFlashcards" placeholder="Paste any educational text here and we'll automatically create flashcards from it..."></textarea>
+                </div>
+                <div class="input-group">
+                    <label>Or Add Manual Cards (Question on one line, Answer on next):</label>
+                    <textarea id="manualFlashcards" placeholder="What is 2+2?&#10;4&#10;Capital of France?&#10;Paris"></textarea>
+                </div>
+                <div class="controls">
+                    <button class="btn" onclick="generateFlashcards()">✨ Generate</button>
+                    <button class="btn btn-secondary" onclick="previousCard()">⬅️ Previous</button>
+                    <button class="btn btn-secondary" onclick="nextCard()">➡️ Next</button>
+                </div>
+                <div class="flashcard" id="flashcard" onclick="flipCard()">
+                    <div class="flashcard-text" id="flashcardText">Create flashcards to begin!</div>
+                </div>
+                <div class="stats">
+                    <div class="stat-item">
+                        <div>Card</div>
+                        <div class="stat-value" id="cardNumber">0/0</div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="memory-game" class="section">
+                <h2 style="text-align: center; color: #f5576c; margin-bottom: 20px;">🎮 Memory Game</h2>
+                <div class="input-group">
+                    <label>Category:</label>
+                    <select id="memoryCategory">
+                        <option value="countries">🌍 Countries</option>
+                        <option value="science">🔬 Science</option>
+                        <option value="math">➗ Math</option>
+                    </select>
+                </div>
+                <button class="btn" onclick="setupMemoryGame()">🔄 New Game</button>
+                <div class="stats">
+                    <div class="stat-item">
+                        <div>Moves</div>
+                        <div class="stat-value" id="moves">0</div>
+                    </div>
+                    <div class="stat-item">
+                        <div>Matches</div>
+                        <div class="stat-value" id="matches">0/8</div>
+                    </div>
+                </div>
+                <div class="game-board" id="gameBoard"></div>
+            </div>
+
+            <div id="quiz" class="section">
+                <h2 style="text-align: center; color: #f5576c; margin-bottom: 20px;">❓ Quiz Mode</h2>
+                <div class="input-group">
+                    <label>Topic:</label>
+                    <select id="quizTopic">
+                        <option value="geography">🌍 Geography</option>
+                        <option value="science">🔬 Science</option>
+                        <option value="math">➗ Math</option>
+                    </select>
+                </div>
+                <button class="btn" onclick="startQuiz()">🎯 Start Quiz</button>
+                <div id="quizContent"></div>
+                <div class="stats" id="quizStats" style="display: none;">
+                    <div class="stat-item">
+                        <div>Score</div>
+                        <div class="stat-value" id="quizScore">0/0</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const data = {
+            countries: { terms: ['USA', 'China', 'Japan', 'France', 'Brazil', 'India', 'Egypt', 'Canada', 'Mexico', 'Italy', 'Spain', 'Greece', 'Kenya', 'Peru', 'Thailand', 'Norway'] },
+            science: { terms: ['Atom', 'Cell', 'DNA', 'Energy', 'Force', 'Gravity', 'Heat', 'Light', 'Mass', 'Molecule', 'Neutron', 'Oxygen', 'Proton', 'Quantum', 'Reaction', 'Velocity'] },
+            math: { terms: ['Add', 'Divide', 'Equal', 'Factor', 'Graph', 'Limit', 'Matrix', 'Prime', 'Ratio', 'Root', 'Sum', 'Term', 'Value', 'Vector', 'Zero', 'Angle'] },
+            geography: { quiz: [
+                {q: 'Capital of France?', a: ['London', 'Paris', 'Berlin', 'Rome'], correct: 1},
+                {q: 'Largest ocean?', a: ['Atlantic', 'Indian', 'Pacific', 'Arctic'], correct: 2},
+                {q: 'Tallest mountain?', a: ['K2', 'Everest', 'Denali', 'Fuji'], correct: 1},
+                {q: 'Longest river?', a: ['Amazon', 'Nile', 'Yangtze', 'Mississippi'], correct: 1},
+                {q: 'Largest desert?', a: ['Gobi', 'Sahara', 'Arabian', 'Kalahari'], correct: 1}
+            ]},
+            science: { quiz: [
+                {q: 'Chemical symbol for water?', a: ['H2O', 'CO2', 'O2', 'N2'], correct: 0},
+                {q: 'Speed of light?', a: ['300k km/s', '150k km/s', '450k km/s', '200k km/s'], correct: 0},
+                {q: 'Smallest unit of life?', a: ['Atom', 'Cell', 'Molecule', 'Organ'], correct: 1},
+                {q: 'Planet closest to sun?', a: ['Venus', 'Mercury', 'Mars', 'Earth'], correct: 1},
+                {q: 'Number of bones in human body?', a: ['196', '206', '216', '186'], correct: 1}
+            ]},
+            math: { quiz: [
+                {q: 'What is 12 × 12?', a: ['124', '134', '144', '154'], correct: 2},
+                {q: 'Square root of 64?', a: ['6', '7', '8', '9'], correct: 2},
+                {q: 'What is π approximately?', a: ['3.14', '2.71', '1.41', '1.73'], correct: 0},
+                {q: '50% of 200?', a: ['50', '75', '100', '150'], correct: 2},
+                {q: 'Perimeter of square with side 5?', a: ['15', '20', '25', '30'], correct: 1}
+            ]}
+        };
+
+        let words = [], currentWordIndex = 0, isPaused = false, speedInterval, startTime;
+        let flashcards = [], currentCardIndex = 0, isFlipped = false;
+        let memoryCards = [], flippedCards = [], matchedPairs = 0, moves = 0;
+        let quizQuestions = [], currentQuizIndex = 0, quizCorrect = 0, quizTotal = 0;
+
+        function switchTab(e, tab) {
+            document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.getElementById(tab).classList.add('active');
+            e.target.classList.add('active');
+        }
+
+        function startSpeedReader() {
+            const text = document.getElementById('readerText').value.trim();
+            if (!text) return alert('Please paste some text!');
+            if (currentWordIndex === 0) {
+                words = text.split(/\s+/);
+                startTime = Date.now();
+            }
+            isPaused = false;
+            const wpm = parseInt(document.getElementById('wpm').value);
+            clearInterval(speedInterval);
+            speedInterval = setInterval(() => {
+                if (!isPaused && currentWordIndex < words.length) {
+                    document.getElementById('flashWord').textContent = words[currentWordIndex];
+                    currentWordIndex++;
+                    document.getElementById('wordsRead').textContent = currentWordIndex;
+                    document.getElementById('progress').textContent = Math.round((currentWordIndex / words.length) * 100) + '%';
+                } else if (currentWordIndex >= words.length) {
+                    clearInterval(speedInterval);
+                    document.getElementById('flashWord').textContent = '✨ Complete! ✨';
+                }
+            }, 60000 / wpm);
+        }
+
+        function pauseSpeedReader() {
+            isPaused = !isPaused;
+        }
+
+        function resetSpeedReader() {
+            clearInterval(speedInterval);
+            currentWordIndex = 0;
+            isPaused = false;
+            document.getElementById('flashWord').textContent = 'Ready!';
+            document.getElementById('wordsRead').textContent = '0';
+            document.getElementById('progress').textContent = '0%';
+        }
+
+        function generateFlashcards() {
+            flashcards = [];
+            
+            // Try auto-generation from any text first
+            const autoText = document.getElementById('autoFlashcards').value.trim();
+            if (autoText) {
+                // Split into sentences
+                const sentences = autoText.split(/[.!?]+/).filter(s => s.trim().length > 10);
+                sentences.forEach((sentence, i) => {
+                    const words = sentence.trim().split(' ');
+                    if (words.length >= 5) {
+                        // Create a "fill in the blank" style question
+                        const keyWord = words[Math.floor(words.length / 2)];
+                        const question = sentence.trim().replace(keyWord, '___');
+                        flashcards.push({
+                            front: 'Fill in the blank: ' + question,
+                            back: keyWord + ' (Full: ' + sentence.trim() + ')'
+                        });
+                    }
+                });
+            }
+            
+            // Also process manual cards (every 2 lines = 1 card)
+            const manualText = document.getElementById('manualFlashcards').value.trim();
+            if (manualText) {
+                const lines = manualText.split('\n').filter(l => l.trim());
+                for (let i = 0; i < lines.length - 1; i += 2) {
+                    flashcards.push({
+                        front: lines[i].trim(),
+                        back: lines[i + 1].trim()
+                    });
+                }
+            }
+            
+            if (flashcards.length === 0) return alert('Please add some text or Q&A pairs!');
+            currentCardIndex = 0;
+            isFlipped = false;
+            displayFlashcard();
+        }
+
+        function displayFlashcard() {
+            if (flashcards.length === 0) return;
+            const card = flashcards[currentCardIndex];
+            document.getElementById('flashcard').classList.remove('flipped');
+            document.getElementById('flashcardText').textContent = card.front;
+            document.getElementById('cardNumber').textContent = `${currentCardIndex + 1}/${flashcards.length}`;
+            isFlipped = false;
+        }
+
+        function flipCard() {
+            if (flashcards.length === 0) return;
+            const card = flashcards[currentCardIndex];
+            isFlipped = !isFlipped;
+            if (isFlipped) {
+                document.getElementById('flashcard').classList.add('flipped');
+                document.getElementById('flashcardText').textContent = card.back;
+            } else {
+                document.getElementById('flashcard').classList.remove('flipped');
+                document.getElementById('flashcardText').textContent = card.front;
+            }
+        }
+
+        function nextCard() {
+            if (flashcards.length === 0) return;
+            currentCardIndex = (currentCardIndex + 1) % flashcards.length;
+            displayFlashcard();
+        }
+
+        function previousCard() {
+            if (flashcards.length === 0) return;
+            currentCardIndex = (currentCardIndex - 1 + flashcards.length) % flashcards.length;
+            displayFlashcard();
+        }
+
+        function setupMemoryGame() {
+            const category = document.getElementById('memoryCategory').value;
+            const terms = data[category].terms.slice(0, 8);
+            memoryCards = [...terms, ...terms].sort(() => Math.random() - 0.5);
+            flippedCards = [];
+            matchedPairs = 0;
+            moves = 0;
+            document.getElementById('moves').textContent = '0';
+            document.getElementById('matches').textContent = '0/8';
+            const board = document.getElementById('gameBoard');
+            board.innerHTML = '';
+            memoryCards.forEach((term, i) => {
+                const card = document.createElement('div');
+                card.className = 'memory-card';
+                card.dataset.value = term;
+                card.dataset.index = i;
+                card.textContent = '?';
+                card.onclick = () => flipMemoryCard(i);
+                board.appendChild(card);
+            });
+        }
+
+        function flipMemoryCard(index) {
+            const card = document.querySelector(`[data-index="${index}"]`);
+            if (card.classList.contains('flipped') || card.classList.contains('matched') || flippedCards.length >= 2) return;
+            card.classList.add('flipped');
+            card.textContent = memoryCards[index];
+            flippedCards.push(index);
+            if (flippedCards.length === 2) {
+                moves++;
+                document.getElementById('moves').textContent = moves;
+                const card1 = document.querySelector(`[data-index="${flippedCards[0]}"]`);
+                const card2 = document.querySelector(`[data-index="${flippedCards[1]}"]`);
+                if (memoryCards[flippedCards[0]] === memoryCards[flippedCards[1]]) {
+                    setTimeout(() => {
+                        card1.classList.add('matched');
+                        card2.classList.add('matched');
+                        matchedPairs++;
+                        document.getElementById('matches').textContent = matchedPairs + '/8';
+                        flippedCards = [];
+                        if (matchedPairs === 8) alert('🎉 You won!');
+                    }, 500);
+                } else {
+                    setTimeout(() => {
+                        card1.classList.remove('flipped');
+                        card2.classList.remove('flipped');
+                        card1.textContent = '?';
+                        card2.textContent = '?';
+                        flippedCards = [];
+                    }, 1000);
+                }
+            }
+        }
+
+        function startQuiz() {
+            const topic = document.getElementById('quizTopic').value;
+            quizQuestions = data[topic].quiz;
+            currentQuizIndex = 0;
+            quizCorrect = 0;
+            quizTotal = 0;
+            document.getElementById('quizStats').style.display = 'grid';
+            showQuizQuestion();
+        }
+
+        function showQuizQuestion() {
+            if (currentQuizIndex >= quizQuestions.length) {
+                document.getElementById('quizContent').innerHTML = `
+                    <div style="text-align: center; padding: 40px;">
+                        <h2 style="color: #f5576c;">Quiz Complete!</h2>
+                        <p style="font-size: 1.5em;">Score: ${quizCorrect}/${quizTotal}</p>
+                    </div>`;
+                return;
+            }
+            const q = quizQuestions[currentQuizIndex];
+            let html = `<div style="margin: 20px 0;">
+                <h3 style="color: #f5576c;">Question ${currentQuizIndex + 1}/${quizQuestions.length}</h3>
+                <p style="font-size: 1.2em; margin: 20px 0;">${q.q}</p>`;
+            q.a.forEach((answer, i) => {
+                html += `<div class="quiz-option" onclick="checkAnswer(${i}, ${q.correct})">${answer}</div>`;
+            });
+            html += '</div>';
+            document.getElementById('quizContent').innerHTML = html;
+        }
+
+        function checkAnswer(selected, correct) {
+            quizTotal++;
+            const options = document.querySelectorAll('.quiz-option');
+            if (selected === correct) {
+                quizCorrect++;
+                options[selected].classList.add('correct');
+            } else {
+                options[selected].classList.add('incorrect');
+                options[correct].classList.add('correct');
+            }
+            document.getElementById('quizScore').textContent = `${quizCorrect}/${quizTotal}`;
+            setTimeout(() => {
+                currentQuizIndex++;
+                showQuizQuestion();
+            }, 1500);
+        }
+
+        setupMemoryGame();
+    </script>
+</body>
+</html>
